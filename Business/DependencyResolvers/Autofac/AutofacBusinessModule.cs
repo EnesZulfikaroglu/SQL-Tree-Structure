@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Business.Managers;
 using Business.Services;
+using Core.Utilities.Cache;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFramework;
 using System;
@@ -15,6 +16,10 @@ namespace Business.DependencyResolvers.Autofac
         {
             builder.RegisterType<EmployeeManager>().As<IEmployeeService>();
             builder.RegisterType<EfEmployeeDal>().As<IEmployeeDal>();
+
+            builder.RegisterType<RedisManager>().As<IRedisService>();
+
+            builder.RegisterType<RedisCache>().As<ICache>();
         }
     }
 }

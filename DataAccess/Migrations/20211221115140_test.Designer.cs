@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(EmployeeTreeContext))]
-    [Migration("20211216141933_deneme1")]
-    partial class deneme1
+    [Migration("20211221115140_test")]
+    partial class test
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

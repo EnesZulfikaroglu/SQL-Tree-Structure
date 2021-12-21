@@ -1,4 +1,5 @@
-﻿using DataAccess.Abstract;
+﻿using AutoMapper;
+using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFramework.Contexts;
 using DataAccess.Concrete.EntityFramework.Repositories;
 using Entities.Concrete;
@@ -14,18 +15,14 @@ namespace DataAccess.Concrete.EntityFramework
     public class EfEmployeeDal : GenericRepositoryBase<Employee>, IEmployeeDal
     {
         public EmployeeTreeContext _context { get; set; }
-        public EfEmployeeDal(EmployeeTreeContext context) : base(context)
+        private IMapper _mapper;
+        public EfEmployeeDal(EmployeeTreeContext context, IMapper mapper) : base(context)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        public void SafeAdd(Employee employee)
-        {
-            // Add the new Child
-            Add(employee);
-        }
-
-        public void SafeDelete(Employee employee)
+        public Employee SafeDelete(Employee employee)
         {
             // Get the Data 
             var children = _context.Employees.Where(x => x.ParentId == employee.Id).ToList();
@@ -41,7 +38,7 @@ namespace DataAccess.Concrete.EntityFramework
 
             // Delete the old parent
             Delete(oldParent);
-
+            return (oldParent);
             /*
             var deletedEntity = _context.Entry(employee);
             deletedEntity.State = EntityState.Deleted;
@@ -57,8 +54,6 @@ namespace DataAccess.Concrete.EntityFramework
             {
                 TreeHelper(parent);
             }
-
-            _context.SaveChanges();
 
             return Root.ToList();
         }

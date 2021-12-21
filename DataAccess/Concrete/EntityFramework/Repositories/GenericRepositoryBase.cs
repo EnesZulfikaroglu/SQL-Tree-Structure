@@ -19,11 +19,12 @@ namespace DataAccess.Concrete.EntityFramework.Repositories
         {
             _context = context;
         }
-        public void Add(TEntity entity)
+        public TEntity Add(TEntity entity)
         {
             var addedEntity = _context.Entry(entity);
             addedEntity.State = EntityState.Added;
             _context.SaveChanges();
+            return entity;
         }
 
         public void Delete(TEntity entity)
@@ -49,12 +50,13 @@ namespace DataAccess.Concrete.EntityFramework.Repositories
 
         }
 
-        public void Update(TEntity entity)
+        public TEntity Update(TEntity entity)
         {
 
             var updatedEntity = _context.Entry(entity);
             updatedEntity.State = EntityState.Modified;
             _context.SaveChanges();
+            return entity;
         }
     }
 }

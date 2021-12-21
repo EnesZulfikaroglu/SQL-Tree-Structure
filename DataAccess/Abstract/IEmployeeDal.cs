@@ -9,8 +9,7 @@ namespace DataAccess.Abstract
 {
     public interface IEmployeeDal : IRepository<Employee>
     {
-        public void SafeAdd(Employee employee);
-        public void SafeDelete(Employee employee);
+        public Employee SafeDelete(Employee employee);
         public IList<Employee> GetTree();
         public void TreeHelper(Employee parent);
     }

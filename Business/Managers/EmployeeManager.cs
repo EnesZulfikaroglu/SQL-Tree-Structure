@@ -1,8 +1,10 @@
-﻿using Business.Constants;
+﻿using AutoMapper;
+using Business.Constants;
 using Business.Services;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
+using Entities.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,35 +15,24 @@ namespace Business.Managers
     public class EmployeeManager : IEmployeeService
     {
         private IEmployeeDal _employeeDal;
+        private IMapper _mapper; 
 
-        public EmployeeManager(IEmployeeDal employeeDal)
+        public EmployeeManager(IEmployeeDal employeeDal, IMapper mapper)
         {
             _employeeDal = employeeDal;
+            _mapper = mapper;
         }
 
-        public IResult Add(Employee employee)
+        public IDataResult<Employee> Add(Employee employee)
         {
             try
             {
-                _employeeDal.Add(employee);
-                return new SuccessResult(Messages.AddSuccess);
+                var addedEmployee = _employeeDal.Add(employee);
+                return new SuccessDataResult<Employee>(addedEmployee, Messages.AddSuccess);
             }
             catch (Exception)
             {
-                return new ErrorResult(Messages.AddFailure);
-            }
-        }
-
-        public IResult SafeAdd(Employee employee)
-        {
-            try
-            {
-                _employeeDal.SafeAdd(employee);
-                return new SuccessResult(Messages.AddSuccess);
-            }
-            catch (Exception)
-            {
-                return new ErrorResult(Messages.AddFailure);
+                return new ErrorDataResult<Employee>(employee, Messages.AddFailure);
             }
         }
 
@@ -57,41 +48,45 @@ namespace Business.Managers
                 return new ErrorResult(Messages.DeleteFailure);
             }
         }
-        public IResult SafeDelete(Employee employee)
+        public IDataResult<Employee> SafeDelete(Employee employee)
         {
             try
             {
-                _employeeDal.SafeDelete(employee);
-                return new SuccessResult(Messages.DeleteSuccess);
+                var deletedEmployee = _employeeDal.SafeDelete(employee);
+                return new SuccessDataResult<Employee>(deletedEmployee, Messages.DeleteSuccess);
             }
             catch (Exception)
             {
-                return new ErrorResult(Messages.DeleteFailure);
+                return new ErrorDataResult<Employee>(employee, Messages.DeleteFailure);
             }
         }
 
-        public IResult Update(Employee employee)
+        public IDataResult<Employee> Update(Employee employee)
         {
             try
             {
-                _employeeDal.Update(employee);
-                return new SuccessResult(Messages.UpdateSuccess);
+                var updatedEmployee = _employeeDal.Update(employee);
+                return new SuccessDataResult<Employee>(updatedEmployee, Messages.UpdateSuccess);
             }
             catch (Exception)
             {
-                return new ErrorResult(Messages.UpdateFailure);
+                return new ErrorDataResult<Employee>(employee, Messages.UpdateFailure);
             }
         }
 
-        public IDataResult<Employee> GetById(int EmployeeId)
+        public IDataResult<EmployeeDto> GetById(int EmployeeId)
         {
             try
             {
-                return new SuccessDataResult<Employee>(_employeeDal.Get(p => p.Id == EmployeeId));
+                var result = _mapper.Map<EmployeeDto>(_employeeDal.Get(p => p.Id == EmployeeId));
+
+                return new SuccessDataResult<EmployeeDto>(result);
             }
             catch (Exception)
             {
-                return new ErrorDataResult<Employee>(_employeeDal.Get(p => p.Id == EmployeeId));
+                var result = _mapper.Map<EmployeeDto>(_employeeDal.Get(p => p.Id == EmployeeId));
+
+                return new ErrorDataResult<EmployeeDto>(result);
             }
 
         }
@@ -108,15 +103,23 @@ namespace Business.Managers
             }
         }
 
-        public IDataResult<List<Employee>> GetTree()
+        public IDataResult<List<ListDto>> GetTree()
         {
             try
             {
-                return new SuccessDataResult<List<Employee>>(_employeeDal.GetTree().ToList());
+                var tree = _employeeDal.GetTree().ToList();
+
+                var result = _mapper.Map<List<Employee>, List<ListDto>>(tree);
+
+                return new SuccessDataResult<List<ListDto>>(result);
             }
             catch (Exception)
             {
-                return new ErrorDataResult<List<Employee>>(_employeeDal.GetTree().ToList());
+                var tree = _employeeDal.GetTree().ToList();
+
+                var result = tree.Select(_mapper.Map<Employee, ListDto>).ToList();
+
+                return new SuccessDataResult<List<ListDto>>(result);
             }
         }
     }

@@ -6,17 +6,14 @@ using System.Text;
 
 namespace Entities.Concrete
 {
-    public class Employee : IEntity
+    public class ListDto : IDto
     {
         public int Id { get; set; }
-        
+
         public string Name { get; set; }
-        
-        [ForeignKey("ParentEmployee")]
+
         public int? ParentId { get; set; }
 
-        public virtual Employee ParentEmployee { get; set; }
-
-        public virtual List<Employee> Children { get; set; }
+        public virtual List<ListDto> Children {get;set;}
     }
 }

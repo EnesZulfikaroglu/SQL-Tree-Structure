@@ -1,5 +1,8 @@
-﻿using Business.Services;
+﻿using AutoMapper;
+using Business.Services;
+using Core.Utilities.Cache;
 using Entities.Concrete;
+using Entities.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -13,10 +16,17 @@ namespace WebAPI.Controllers
     public class EmployeesController : ControllerBase
     {
         private IEmployeeService _employeeService;
-        
-        public EmployeesController(IEmployeeService employeeService)
+        private IMapper _mapper;
+        //private IRedisService _redisService;
+        private ICache _redisCache;
+        private bool redisConnection;
+
+        public EmployeesController(IEmployeeService employeeService, ICache redisCache, IMapper mapper)
         {
             _employeeService = employeeService;
+            _mapper = mapper;
+            _redisCache = redisCache;
+            redisConnection = _redisCache.CheckConnectionWithTimeLimit(TimeSpan.FromMilliseconds(100));
         }
 
         /// <summary>
@@ -26,15 +36,45 @@ namespace WebAPI.Controllers
         [HttpGet("getall")]
         public IActionResult GetList()
         {
+            var watch = new System.Diagnostics.Stopwatch();  // To calculate execution time
 
+            if (redisConnection && _redisCache.Exists("getall"))
+            {
+                watch.Start();
+
+                Console.WriteLine("Using Redis...");
+                var RedisResult = _redisCache.Get<List<Employee>>("getall");
+
+                watch.Stop();
+                Console.WriteLine($"Execution time with Redis: {watch.ElapsedMilliseconds} ms");
+
+                return Ok(RedisResult);
+            }
+
+            watch.Start();
+
+            Console.WriteLine("Not using Redis...");
             var result = _employeeService.GetTree();
+
+            watch.Stop();
+            Console.WriteLine($"Execution time without Redis: {watch.ElapsedMilliseconds} ms");
 
             if (result.Success)
             {
+                if (redisConnection)
+                {
+                    _redisCache.Set<List<ListDto>>("getall", result.Data, DateTime.Now.AddMinutes(60));
+                    Console.WriteLine("data got cached with Redis");
+                }
+                else
+                {
+                    Console.WriteLine("Can not connect to Redis");
+                }
                 return Ok(result.Data);
             }
             else
             {
+
                 return BadRequest(result.Message);
             }
 
@@ -48,10 +88,40 @@ namespace WebAPI.Controllers
         [HttpGet("getbyid")]
         public IActionResult Get(int id)
         {
+            var watch = new System.Diagnostics.Stopwatch();  // To calculate execution time
+
+            if (redisConnection && _redisCache.Exists($"getbyid-{id}"))
+            {
+                watch.Start();
+
+                Console.WriteLine("Using Redis...");
+                var RedisResult = _redisCache.Get<EmployeeDto>($"getbyid-{id}");
+
+                watch.Stop();
+                Console.WriteLine($"Execution time with Redis: {watch.ElapsedMilliseconds} ms");
+
+                return Ok(RedisResult);
+            }
+
+            watch.Start();
+
+            Console.WriteLine("Not using Redis...");
             var result = _employeeService.GetById(id);
-            
+
+            watch.Stop();
+            Console.WriteLine($"Execution time without Redis: {watch.ElapsedMilliseconds} ms");
+
             if (result.Success)
             {
+                if (redisConnection)
+                {
+                    _redisCache.Set<EmployeeDto>($"getbyid-{id}", result.Data, DateTime.Now.AddMinutes(60));
+                    Console.WriteLine("data got cached with Redis");
+                }
+                else
+                {
+                    Console.WriteLine("Can not connect to Redis");
+                }
                 return Ok(result.Data);
             }
             else
@@ -60,19 +130,20 @@ namespace WebAPI.Controllers
             }
         }
 
+
         /// <summary>
-        /// Add a new employee to database - Admin authentication is required
+        /// Add a new employee to database
         /// </summary>
         /// <param name="employee"></param>
         /// <returns></returns>
         [HttpPost("add")]
-        public IActionResult Add(Employee employee)
+        public IActionResult Add(EmployeeToAddDto employee)
         {
-            var result = _employeeService.SafeAdd(employee);
+            var result = _employeeService.Add(_mapper.Map<Employee>(employee));
 
             if (result.Success)
             {
-                return Ok(result.Message);
+                return Ok(result.Message + "\nId: " + result.Data.Id);
             }
             else
             {
@@ -81,18 +152,18 @@ namespace WebAPI.Controllers
         }
 
         /// <summary>
-        /// Delete a employee from database - Admin authentication is required
+        /// Delete an employee from database
         /// </summary>
         /// <param name="employee"></param>
         /// <returns></returns>
         [HttpPost("delete")]
-        public IActionResult Delete(Employee employee)
+        public IActionResult Delete(EmployeeToDeleteDto employee)
         {
-            var result = _employeeService.SafeDelete(employee);
+            var result = _employeeService.SafeDelete(_mapper.Map<Employee>(employee));
 
             if (result.Success)
             {
-                return Ok(result.Message);
+                return Ok(result.Message + "\nId: " + result.Data.Id);
             }
             else
             {
@@ -101,18 +172,18 @@ namespace WebAPI.Controllers
         }
 
         /// <summary>
-        /// Update a employee on database - Admin authentication is required
+        /// Update an employee on database
         /// </summary>
         /// <param name="employee"></param>
         /// <returns></returns>
         [HttpPost("update")]
-        public IActionResult Update(Employee employee)
+        public IActionResult Update(EmployeeToUpdateDto employee)
         {
-            var result = _employeeService.Update(employee);
+            var result = _employeeService.Update(_mapper.Map<Employee>(employee));
 
             if (result.Success)
             {
-                return Ok(result.Message);
+                return Ok(result.Message + "\nId: " + result.Data.Id);
             }
             else
             {
