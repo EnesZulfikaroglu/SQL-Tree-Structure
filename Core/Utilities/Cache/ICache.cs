@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Core.Utilities.Cache
 {
-    public interface ICache : IDisposable
+    public interface ICache
     {
         bool CheckConnectionWithTimeLimit(TimeSpan timeSpan);
 

@@ -80,9 +80,6 @@ namespace Core.Utilities.Cache
         }
 
         // Redis - Disposing Connection
-        public void Dispose()
-        {
-            RedisConnectionFactory.Connection.Dispose();
-        }
+
     }
 }
