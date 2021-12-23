@@ -9,14 +9,15 @@ namespace Core.Utilities.Cache
 {
     public class RedisCache : ICache
     {
-        private readonly IDatabase _redisDb;
+        private RedisServer _redisServer;
 
         // Setting the connection while initializing
-        public RedisCache()
+        public RedisCache(RedisServer redisServer)
         {
-            _redisDb = RedisConnectionFactory.Connection.GetDatabase();
+            _redisServer = redisServer;
         }
 
+        // Returns true if connected successfully
         public bool CheckConnectionWithTimeLimit(TimeSpan timeSpan)
         {
             try
@@ -36,42 +37,49 @@ namespace Core.Utilities.Cache
         {
             try
             {
-                _redisDb.Ping();
+                _redisServer.Database.Ping();
             }
             catch (Exception)
             {
             }
         }
 
-        //Redis'e json formatında set işlemi yapılan metot
+        // Redis - Setting Data
         public void Set<T>(string key, T objectToCache, DateTime expireDate)
         {
             var expireTimeSpan = expireDate.Subtract(DateTime.Now);
 
-            _redisDb.StringSet(key, JsonConvert.SerializeObject(objectToCache), expireTimeSpan);
+            _redisServer.Database.StringSet(key, JsonConvert.SerializeObject(objectToCache), expireTimeSpan);
         }
 
-        //Redis te var olan key'e karşılık gelen value'yu alıp deserialize ettikten sonra return eden metot
+        // Redis - Getting data
         public T Get<T>(string key)
         {
-            var redisObject = _redisDb.StringGet(key);
+            var redisObject = _redisServer.Database.StringGet(key);
 
             return redisObject.HasValue ? JsonConvert.DeserializeObject<T>(redisObject) : Activator.CreateInstance<T>();
         }
 
-        //Redis te var olan key-value değerlerini silen metot
+        // Redis - Deleting a key
         public void Delete(string key)
         {
-            _redisDb.KeyDelete(key);
+            _redisServer.Database.KeyDelete(key);
+        }
+
+        public void FlushAll()
+        {
+            _redisServer.FlushDatabase();
+
+            Console.WriteLine("Redis Database flushed");
         }
 
         // Returns true if key exists
         public bool Exists(string key)
         {
-            return _redisDb.KeyExists(key);
+            return _redisServer.Database.KeyExists(key);
         }
 
-        //Redis bağlantısını Dispose eden metot
+        // Redis - Disposing Connection
         public void Dispose()
         {
             RedisConnectionFactory.Connection.Dispose();

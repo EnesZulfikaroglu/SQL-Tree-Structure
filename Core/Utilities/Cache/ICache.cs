@@ -15,6 +15,8 @@ namespace Core.Utilities.Cache
 
         void Delete(string key);
 
+        void FlushAll();
+
         bool Exists(string key);
     }
 }

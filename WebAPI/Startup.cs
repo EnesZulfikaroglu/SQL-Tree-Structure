@@ -1,4 +1,5 @@
 using AutoMapper;
+using Core.Utilities.Cache;
 using DataAccess.Concrete.EntityFramework;
 using DataAccess.Concrete.EntityFramework.Contexts;
 using Entities.Mapper;
@@ -42,6 +43,8 @@ namespace WebAPI
 
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
+
+            services.AddSingleton<RedisServer>();
 
             var connection = Configuration.GetValue<string>("ConnectionStrings:LocalConnection");
             services.AddDbContext<EmployeeTreeContext>(options =>

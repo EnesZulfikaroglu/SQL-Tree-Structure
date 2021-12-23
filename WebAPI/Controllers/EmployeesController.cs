@@ -43,7 +43,7 @@ namespace WebAPI.Controllers
                 watch.Start();
 
                 Console.WriteLine("Using Redis...");
-                var RedisResult = _redisCache.Get<List<Employee>>("getall");
+                var RedisResult = _redisCache.Get<List<ListDto>>("getall");
 
                 watch.Stop();
                 Console.WriteLine($"Execution time with Redis: {watch.ElapsedMilliseconds} ms");
@@ -143,6 +143,10 @@ namespace WebAPI.Controllers
 
             if (result.Success)
             {
+                if (redisConnection)
+                {
+                    _redisCache.FlushAll();
+                }
                 return Ok(result.Message + "\nId: " + result.Data.Id);
             }
             else
@@ -163,6 +167,10 @@ namespace WebAPI.Controllers
 
             if (result.Success)
             {
+                if (redisConnection)
+                {
+                    _redisCache.FlushAll();
+                }
                 return Ok(result.Message + "\nId: " + result.Data.Id);
             }
             else
@@ -183,6 +191,10 @@ namespace WebAPI.Controllers
 
             if (result.Success)
             {
+                if (redisConnection)
+                {
+                    _redisCache.FlushAll();
+                }
                 return Ok(result.Message + "\nId: " + result.Data.Id);
             }
             else

@@ -8,17 +8,17 @@ namespace Core.Utilities.Cache
     public class RedisConnectionFactory
     {
         private static string ConnectionString = "localhost:6379";
-        static RedisConnectionFactory()
+        private static Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() => {
+            return ConnectionMultiplexer.Connect(ConnectionString + ",abortConnect=false,ssl=true");
+        });
+
+        public static ConnectionMultiplexer Connection
         {
-            lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
+            get
             {
-                return ConnectionMultiplexer.Connect(ConnectionString); // Redis server connection string
-            });
+                return lazyConnection.Value;
+            }
         }
-
-        private static Lazy<ConnectionMultiplexer> lazyConnection;
-
-        public static ConnectionMultiplexer Connection => lazyConnection.Value;
 
         public static void DisposeConnection()
         {
