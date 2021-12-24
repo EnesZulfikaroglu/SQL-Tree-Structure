@@ -1,5 +1,6 @@
 ﻿using Entities;
 using Entities.Concrete;
+using Entities.Hospital;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -41,6 +42,10 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
         }
 
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<Doctor> Doctors { get; set; }
+        public DbSet<Patient> Patients { get; set; }
+        public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<Medicine> Medicines { get; set; }
 
     }
 }

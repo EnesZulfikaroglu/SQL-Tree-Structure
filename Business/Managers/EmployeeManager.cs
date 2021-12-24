@@ -15,7 +15,7 @@ namespace Business.Managers
     public class EmployeeManager : IEmployeeService
     {
         private IEmployeeDal _employeeDal;
-        private IMapper _mapper; 
+        private IMapper _mapper;
 
         public EmployeeManager(IEmployeeDal employeeDal, IMapper mapper)
         {
@@ -25,102 +25,46 @@ namespace Business.Managers
 
         public IDataResult<Employee> Add(Employee employee)
         {
-            try
-            {
-                var addedEmployee = _employeeDal.Add(employee);
-                return new SuccessDataResult<Employee>(addedEmployee, Messages.AddSuccess);
-            }
-            catch (Exception)
-            {
-                return new ErrorDataResult<Employee>(employee, Messages.AddFailure);
-            }
+            var addedEmployee = _employeeDal.Add(employee);
+            return new SuccessDataResult<Employee>(addedEmployee, Messages.AddSuccess);
         }
 
         public IResult Delete(Employee employee)
         {
-            try
-            {
-                _employeeDal.Delete(employee);
-                return new SuccessResult(Messages.DeleteSuccess);
-            }
-            catch (Exception)
-            {
-                return new ErrorResult(Messages.DeleteFailure);
-            }
+            _employeeDal.Delete(employee);
+            return new SuccessResult(Messages.DeleteSuccess);
         }
         public IDataResult<Employee> SafeDelete(Employee employee)
         {
-            try
-            {
-                var deletedEmployee = _employeeDal.SafeDelete(employee);
-                return new SuccessDataResult<Employee>(deletedEmployee, Messages.DeleteSuccess);
-            }
-            catch (Exception)
-            {
-                return new ErrorDataResult<Employee>(employee, Messages.DeleteFailure);
-            }
+            var deletedEmployee = _employeeDal.SafeDelete(employee);
+            return new SuccessDataResult<Employee>(deletedEmployee, Messages.DeleteSuccess);
+
         }
 
         public IDataResult<Employee> Update(Employee employee)
         {
-            try
-            {
-                var updatedEmployee = _employeeDal.Update(employee);
-                return new SuccessDataResult<Employee>(updatedEmployee, Messages.UpdateSuccess);
-            }
-            catch (Exception)
-            {
-                return new ErrorDataResult<Employee>(employee, Messages.UpdateFailure);
-            }
+            var updatedEmployee = _employeeDal.Update(employee);
+            return new SuccessDataResult<Employee>(updatedEmployee, Messages.UpdateSuccess);
         }
 
         public IDataResult<EmployeeDto> GetById(int EmployeeId)
         {
-            try
-            {
-                var result = _mapper.Map<EmployeeDto>(_employeeDal.Get(p => p.Id == EmployeeId));
+            var result = _mapper.Map<EmployeeDto>(_employeeDal.Get(p => p.Id == EmployeeId));
 
-                return new SuccessDataResult<EmployeeDto>(result);
-            }
-            catch (Exception)
-            {
-                var result = _mapper.Map<EmployeeDto>(_employeeDal.Get(p => p.Id == EmployeeId));
-
-                return new ErrorDataResult<EmployeeDto>(result);
-            }
-
+            return new SuccessDataResult<EmployeeDto>(result);
         }
 
         public IDataResult<List<Employee>> GetList()
         {
-            try
-            {
-                return new SuccessDataResult<List<Employee>>(_employeeDal.GetList().ToList());
-            }
-            catch (Exception)
-            {
-                return new ErrorDataResult<List<Employee>>(_employeeDal.GetList().ToList());
-            }
+            return new SuccessDataResult<List<Employee>>(_employeeDal.GetList().ToList());
         }
 
         public IDataResult<List<ListDto>> GetTree()
         {
-            try
-            {
-                var tree = _employeeDal.GetTree().ToList();
+            var tree = _employeeDal.GetTree().ToList();
 
-                var result = _mapper.Map<List<Employee>, List<ListDto>>(tree);
-
-                return new SuccessDataResult<List<ListDto>>(result);
-            }
-            catch (Exception)
-            {
-                var tree = _employeeDal.GetTree().ToList();
-
-                var result = tree.Select(_mapper.Map<Employee, ListDto>).ToList();
-
-                return new SuccessDataResult<List<ListDto>>(result);
-            }
+            var result = _mapper.Map<List<Employee>, List<ListDto>>(tree);
+            return new SuccessDataResult<List<ListDto>>(result);
         }
     }
 }
