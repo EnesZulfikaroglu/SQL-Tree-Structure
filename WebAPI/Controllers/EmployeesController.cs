@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using Business.Services;
-using Core.Utilities.Cache;
-using Entities.Concrete;
+﻿using Business.Services;
 using Entities.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -16,17 +13,10 @@ namespace WebAPI.Controllers
     public class EmployeesController : ControllerBase
     {
         private IEmployeeService _employeeService;
-        private IMapper _mapper;
-        //private IRedisService _redisService;
-        private ICache _redisCache;
-        private bool redisConnection;
 
-        public EmployeesController(IEmployeeService employeeService, ICache redisCache, IMapper mapper)
+        public EmployeesController(IEmployeeService employeeService)
         {
             _employeeService = employeeService;
-            _mapper = mapper;
-            _redisCache = redisCache;
-            redisConnection = _redisCache.CheckConnectionWithTimeLimit(TimeSpan.FromMilliseconds(100));
         }
 
         /// <summary>
@@ -35,49 +25,17 @@ namespace WebAPI.Controllers
         /// <returns></returns>
         [HttpGet("getall")]
         public IActionResult GetList()
-        {
-            var watch = new System.Diagnostics.Stopwatch();  // To calculate execution time
-
-            if (redisConnection && _redisCache.Exists("getall"))
-            {
-                watch.Start();
-
-                Console.WriteLine("Using Redis...");
-                var RedisResult = _redisCache.Get<List<ListDto>>("getall");
-
-                watch.Stop();
-                Console.WriteLine($"Execution time with Redis: {watch.ElapsedMilliseconds} ms");
-
-                return Ok(RedisResult);
-            }
-
-            watch.Start();
-
-            Console.WriteLine("Not using Redis...");
+        {        
             var result = _employeeService.GetTree();
-
-            watch.Stop();
-            Console.WriteLine($"Execution time without Redis: {watch.ElapsedMilliseconds} ms");
 
             if (result.Success)
             {
-                if (redisConnection)
-                {
-                    _redisCache.Set<List<ListDto>>("getall", result.Data, DateTime.Now.AddMinutes(60));
-                    Console.WriteLine("data got cached with Redis");
-                }
-                else
-                {
-                    Console.WriteLine("Can not connect to Redis");
-                }
                 return Ok(result.Data);
             }
             else
             {
-
                 return BadRequest(result.Message);
             }
-
         }
 
         /// <summary>
@@ -88,40 +46,10 @@ namespace WebAPI.Controllers
         [HttpGet("getbyid")]
         public IActionResult Get(int id)
         {
-            var watch = new System.Diagnostics.Stopwatch();  // To calculate execution time
-
-            if (redisConnection && _redisCache.Exists($"getbyid-{id}"))
-            {
-                watch.Start();
-
-                Console.WriteLine("Using Redis...");
-                var RedisResult = _redisCache.Get<EmployeeDto>($"getbyid-{id}");
-
-                watch.Stop();
-                Console.WriteLine($"Execution time with Redis: {watch.ElapsedMilliseconds} ms");
-
-                return Ok(RedisResult);
-            }
-
-            watch.Start();
-
-            Console.WriteLine("Not using Redis...");
             var result = _employeeService.GetById(id);
-
-            watch.Stop();
-            Console.WriteLine($"Execution time without Redis: {watch.ElapsedMilliseconds} ms");
 
             if (result.Success)
             {
-                if (redisConnection)
-                {
-                    _redisCache.Set<EmployeeDto>($"getbyid-{id}", result.Data, DateTime.Now.AddMinutes(60));
-                    Console.WriteLine("data got cached with Redis");
-                }
-                else
-                {
-                    Console.WriteLine("Can not connect to Redis");
-                }
                 return Ok(result.Data);
             }
             else
@@ -139,14 +67,10 @@ namespace WebAPI.Controllers
         [HttpPost("add")]
         public IActionResult Add(EmployeeToAddDto employee)
         {
-            var result = _employeeService.Add(_mapper.Map<Employee>(employee));
+            var result = _employeeService.Add(employee);
 
             if (result.Success)
             {
-                if (redisConnection)
-                {
-                    _redisCache.FlushAll();
-                }
                 return Ok(result.Message + "\nId: " + result.Data.Id);
             }
             else
@@ -163,14 +87,10 @@ namespace WebAPI.Controllers
         [HttpPost("delete")]
         public IActionResult Delete(EmployeeToDeleteDto employee)
         {
-            var result = _employeeService.SafeDelete(_mapper.Map<Employee>(employee));
+            var result = _employeeService.SafeDelete(employee);
 
             if (result.Success)
             {
-                if (redisConnection)
-                {
-                    _redisCache.FlushAll();
-                }
                 return Ok(result.Message + "\nId: " + result.Data.Id);
             }
             else
@@ -187,14 +107,10 @@ namespace WebAPI.Controllers
         [HttpPost("update")]
         public IActionResult Update(EmployeeToUpdateDto employee)
         {
-            var result = _employeeService.Update(_mapper.Map<Employee>(employee));
+            var result = _employeeService.Update(employee);
 
             if (result.Success)
             {
-                if (redisConnection)
-                {
-                    _redisCache.FlushAll();
-                }
                 return Ok(result.Message + "\nId: " + result.Data.Id);
             }
             else

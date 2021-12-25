@@ -18,6 +18,8 @@ namespace Business.DependencyResolvers.Autofac
             builder.RegisterType<EfEmployeeDal>().As<IEmployeeDal>();
 
             builder.RegisterType<RedisCache>().As<ICache>();
+
+            builder.RegisterType<LoggerManager>().As<ILoggerService>();
         }
     }
 }

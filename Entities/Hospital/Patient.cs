@@ -12,9 +12,8 @@ namespace Entities.Hospital
 
         public string Name { get; set; }
 
-        [ForeignKey("FamilyDoctor")]
-        public int FamilyDoctorId { get; set; }
-
-        public virtual Doctor FamilyDoctor {get ;set;}
+        [ForeignKey("CurrentDoctor")]
+        public int CurrentDoctorId { get; set; }
+        public Doctor CurrentDoctor { get; set; }
     }
 }

@@ -10,15 +10,15 @@ namespace Entities.Hospital
     {
         public int Id { get; set; }
 
-        public DateTime date { get; set; }
+        public DateTime Date { get; set; }
 
         [ForeignKey("doctor")]
-        public int doctorId { get; set; }
-        public virtual Doctor doctor { get; set; }
+        public int DoctorId { get; set; }
+        public virtual Doctor Doctor { get; set; }
 
         [ForeignKey("patient")]
-        public int patientId { get; set; }
-        public virtual Patient patient { get; set; }
+        public int PatientId { get; set; }
+        public virtual Patient Patient { get; set; }
 
         public bool IsApproved { get; set; }
 

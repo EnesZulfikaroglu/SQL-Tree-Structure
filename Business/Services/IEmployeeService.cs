@@ -12,9 +12,9 @@ namespace Business.Services
         IDataResult<EmployeeDto> GetById(int id);
         IDataResult<List<Employee>> GetList();
         IDataResult<List<ListDto>> GetTree();
-        IDataResult<Employee> Add(Employee employee);
+        IDataResult<Employee> Add(EmployeeToAddDto employee);
         IResult Delete(Employee employee);
-        IDataResult<Employee> SafeDelete(Employee employee);
-        IDataResult<Employee> Update(Employee employee);
+        IDataResult<Employee> SafeDelete(EmployeeToDeleteDto employee);
+        IDataResult<Employee> Update(EmployeeToUpdateDto employee);
     }
 }

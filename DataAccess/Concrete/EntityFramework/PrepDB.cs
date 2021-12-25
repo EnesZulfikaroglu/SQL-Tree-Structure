@@ -10,7 +10,6 @@ using DataAccess.Concrete.EntityFramework.Contexts;
 
 namespace DataAccess.Concrete.EntityFramework
 {
-
     public static class PrepDB
     {
         public static void PrepPopulation(IApplicationBuilder app)
@@ -24,6 +23,7 @@ namespace DataAccess.Concrete.EntityFramework
         public static void SeedData(EmployeeTreeContext context)
         {
             System.Console.WriteLine("Applying Migrations...");
+
             context.Database.Migrate();
 
             if (!context.Employees.Any())
